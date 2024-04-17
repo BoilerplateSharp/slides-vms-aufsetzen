@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>Virtuelle Maschinen aufsetzen</title>
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/black.css" id="theme" />
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+	<link rel="stylesheet" href="css/layout.css" />
+	<link rel="stylesheet" href="plugin/customcontrols/style.css">
+
+	<link rel="stylesheet" href="plugin/reveal-pointer/pointer.css" />
+
+
+    <script defer src="dist/fontawesome/all.min.js"></script>
+
+	<script type="text/javascript">
+		var forgetPop = true;
+		function onPopState(event) {
+			if(forgetPop){
+				forgetPop = false;
+			} else {
+				parent.postMessage(event.target.location.href, "app://obsidian.md");
+			}
+        }
+		window.onpopstate = onPopState;
+		window.onmessage = event => {
+			if(event.data == "reload"){
+				window.document.location.reload();
+			}
+			forgetPop = true;
+		}
+
+		function fitElements(){
+			const itemsToFit = document.getElementsByClassName('fitText');
+			for (const item in itemsToFit) {
+				if (Object.hasOwnProperty.call(itemsToFit, item)) {
+					var element = itemsToFit[item];
+					fitElement(element,1, 1000);
+					element.classList.remove('fitText');
+				}
+			}
+		}
+
+		function fitElement(element, start, end){
+
+			let size = (end + start) / 2;
+			element.style.fontSize = `${size}px`;
+
+			if(Math.abs(start - end) < 1){
+				while(element.scrollHeight > element.offsetHeight){
+					size--;
+					element.style.fontSize = `${size}px`;
+				}
+				return;
+			}
+
+			if(element.scrollHeight > element.offsetHeight){
+				fitElement(element, start, size);
+			} else {
+				fitElement(element, size, end);
+			}		
+		}
+
+
+		document.onreadystatechange = () => {
+			fitElements();
+			if (document.readyState === 'complete') {
+				if (window.location.href.indexOf("?export") != -1){
+					parent.postMessage(event.target.location.href, "app://obsidian.md");
+				}
+				if (window.location.href.indexOf("print-pdf") != -1){
+					let stateCheck = setInterval(() => {
+						clearInterval(stateCheck);
+						window.print();
+					}, 250);
+				}
+			}
+	};
+
+
+        </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<img src="./assets/scvmm/create-scvmm-1.png" alt="create-scvmm-1" style="object-fit: scale-down">
+
+`source:` [Type 1 and Type 2 Hypervisors: What Makes Them Different | by ResellerClub | ResellerClub | Medium](https://medium.com/teamresellerclub/type-1-and-type-2-hypervisors-what-makes-them-different-6a1755d6ae2c)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Dies ist eine Schritt-für-Schritt Anleitung zum Einrichten einer Ubuntu VM mithilfe von Microsoft SCVMM (System Center Virtual Machine Manager). Falls du die VM auf deinem eigenen PC installieren möchtest, kannst du auch gerne einen anderen Hypervisor (z.B. Virtualbox, HyperV) verwenden.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Je nach Hypervisor können unterschiedliche Einstellungen zusätzlich getätigt werden. Die wichtigsten unter HyperV werden hier gelistet, jedoch nicht alle. 
+
+Bei Fragen oder Problemen mit dieser Anleitung, wende dich bitte an deinen Trainer.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Download der RDP Verbindung
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Um die virtuellen Maschinen zu verwalten, müssen wir uns zuerst mit dem Hypervisor verbinden. Dafür können wir uns eine `.rdp`-Datei herunterladen, welche die Verbindung mit einem einfachen Ausführen einer Datei ermöglicht.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+`.rdp` steht für Remote Desktop Protokoll. Es wird verwendet, um eine Verbindung zu einem anderen Windows-basierten Computer herzustellen. Sie enthält Informationen wie die Adresse des Remote-Computers, den Benutzernamen, das Passwort und bestimmte Konfigurationsoptionen für die Verbindung. Mit einer `.rdp` Datei, können Benutzer eine Verbindung mit einem Remote-Computer herstellen, ohne die Verbindung manuell einzurichten.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Der Download-Link findet sich unter: 
+[RD Web Access (lug-ag.de)](https://rds.lug-ag.de/RDWeb)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<img src="./assets/scvmm/create-scvmm-2.png" alt="create-scvmm-2" style="object-fit: scale-down">
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<img src="./assets/scvmm/create-scvmm-3.png" alt="create-scvmm-3" style="object-fit: scale-down">
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<img src="./assets/scvmm/create-scvmm-4.png" alt="create-scvmm-4" style="object-fit: scale-down">
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<img src="./assets/scvmm/create-scvmm-5.png" alt="create-scvmm-5" style="object-fit: scale-down">
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Neue VM einrichten
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-6.png" alt="create-scvmm-6" style="object-fit: scale-down">
+
+
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; background-color: rgb(50,50,50); border: 2px solid black; box-sizing: border-box; position: absolute; left: 15%; top: 70%; height: 30%; width: 70%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Um eine neue VM zu erstellen, können wir den Button **Create Virtual Machine** verwenden.
+  </div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-7.png" alt="create-scvmm-7" style="object-fit: scale-down">
+
+
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; background-color: rgb(50,50,50); border: 2px solid black; box-sizing: border-box; position: absolute; left: 15%; top: 60%; height: 40%; width: 70%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Da wir keine Vorlage für eine Linux VM auf dem Hypervisor haben, müssen wir mit einer leeren Festplatte anfangen und Ubuntu selbst installieren.
+
+  </div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-8.png" alt="create-scvmm-8" style="object-fit: scale-down">
+
+
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; background-color: rgb(50,50,50); border: 2px solid black; box-sizing: border-box; position: absolute; left: 15%; top: 60%; height: 40%; width: 70%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+An dieser Stelle geben wir der VM einen prägnanten **Namen** und geg. eine Kurzbeschreibung. Achte hier bitte darauf, eine Machine der **Generation 2** zu erstellen.
+
+  </div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Unter "Hardware" stellen wir nun 3 Sachen ein, beginnend mit dem Support für **Hyper-V**. Anschließend müssen wir natürlich die Installationsdatei, sprich die `.iso` Datei für Ubuntu auswählen. 
+</div>
+
+<div class="" style="position: absolute; left: 45%; top: 0%; height: 100%; width: 55%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-9.png" alt="create-scvmm-9" style="object-fit: scale-down">
+
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Dafür nehmen wir das bereits vorhandene Laufwerk und wählen **Existing ISO image** und danach **Browse**.
+
+</div>
+
+<div class="" style="position: absolute; left: 45%; top: 0%; height: 100%; width: 55%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-10.png" alt="create-scvmm-10" style="object-fit: scale-down">
+
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Nun können wir die passende `.iso` auswählen.
+</div>
+
+<div class="" style="position: absolute; left: 45%; top: 0%; height: 100%; width: 55%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-11.png" alt="create-scvmm-11" style="object-fit: scale-down">
+
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Zu guter Letzt, wollen wir unter "Hardware" noch eine Netzwerkverbindung einrichten, damit wir später mit dem Internet verbinden und das System aktualisieren können.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Wähle dazu den bereits bestehenden **Netzwerkadapter** aus und danach auf **Connected to a VM network** --> **Browse**.
+</div>
+<div class="" style="position: absolute; left: 45%; top: 0%; height: 100%; width: 55%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-12.png" alt="create-scvmm-12" style="object-fit: scale-down">
+
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Hier können wir nun die Verbindung **Internet mit Proxy** auswählen.
+
+<img src="./assets/scvmm/create-scvmm-13.png" alt="create-scvmm-13" style="object-fit: scale-down">
+
+
+<aside class="notes"><p>Damit wir tatsächlich ins Internet verbinden können, müssen wir nach der Installation auch noch den Proxy in Ubuntu Konfigurieren. Mehr dazu später.</p>
+</div></aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Auf dieser Seite kann einfach auf **Next** geklickt werden. Keine Änderung notwendig.
+</div>
+
+<div class="" style="position: absolute; left: 45%; top: 0%; height: 100%; width: 55%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-14.png" alt="create-scvmm-14" style="object-fit: scale-down">
+
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Hier sollten nun bei der **Destination**, also dem Ort, wo die VM erstellt wird, 5 Sterne angezeigt werden. 
+</div>
+
+<div class="" style="position: absolute; left: 45%; top: 0%; height: 100%; width: 55%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-15.png" alt="create-scvmm-15" style="object-fit: scale-down">
+
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Falls dies nicht so ist, handelt es sich wahrscheinlich um einen Bug (Fehler). Wiederhole in diesem Fall die Konfiguration des Servers nochmal von Vorne, *allerdings* dieses Mal ohne die Netzwerkverbindung. Diese kann später auch noch hinzugefügt werden.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Auch hier muss nichts eingestellt werden und kann mit **Next** bestätigt werden.
+</div>
+
+<div class="" style="position: absolute; left: 45%; top: 0%; height: 100%; width: 55%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-16.png" alt="create-scvmm-16" style="object-fit: scale-down">
+
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-17.png" alt="create-scvmm-17" style="object-fit: scale-down">
+
+
+<div class="has-dark-background" style="border-radius: 20px; padding: 20px; background-color: rgb(50,50,50); border: 2px solid black; box-sizing: border-box; position: absolute; left: 15%; top: 70%; height: 30%; width: 70%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Nun wird die VM erstellt. Das kann je nach Tageszeit ziemlich lange dauern. Sobald die VM erstellt wurde, erscheint diese in der Liste.
+</div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-18.png" alt="create-scvmm-18" style="object-fit: scale-down">
+
+  
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Die Virtuelle Machine lässt sich über das **Rechtsklick-Menü** *Starten*/*Stoppen*/*Pausieren* und damit lässt sich auch auf die VM Verbinden.
+  </div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-19.png" alt="create-scvmm-19" style="object-fit: scale-down">
+
+  
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Nachdem wir also die virtuelle Machine konfiguriert und sie gestartet haben, startet sich automatisch der Installer für Ubuntu.
+
+  </div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-20.png" alt="create-scvmm-20" style="object-fit: scale-down">
+
+  
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+  
+Wir wählen das passende Tastatur-Schema: `German-German`
+</div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  
+<img src="./assets/scvmm/create-scvmm-21.png" alt="create-scvmm-21" style="object-fit: scale-down">
+
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+Wähle `Normale Installation`, damit essentielle Software für die Desktopumgebung mitinstalliert wird.
+  </div>
+</div>
+
+
+
+notes:
+Falls du Ubuntu, oder eine andere Linux/Unix Distro, installierst, und eine dedizierte Grafikkarte hast (Gilt auch für Laptops mit MUX-Chip), dann wählen Sie hier den letzten Punk ebenfalls aus. Dieser installiert automatisch die passenden Treiber des Herstellers (`proprietary`) für Ihre Hardware.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  
+<img src="./assets/scvmm/create-scvmm-22.png" alt="create-scvmm-22" style="object-fit: scale-down">
+
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+Hier könnten wir die Festplatte/n manuell formatieren. Wir vertrauen einfach darauf, dass Ubuntu sinnvolle "defaults" wählt.
+  </div>
+</div>
+
+notes:
+Du kannst unter `advanced features` noch folgende Features aktivieren:
+
+- `Use LVM with the new Ubuntu installation`
+	- **L**ogical **V**olume **M**anagement
+	- LVM (Logical Volume Management) ist ein Dateisystem-Management-System in Linux, das es ermöglicht, Festplatten und Partitionen dynamisch zu verwalten und zu verändern, ohne Daten zu verlieren. Mit LVM kann man zum Beispiel Speicher hinzufügen, ohne dass ein Systemneustart erforderlich ist, und man kann auch einfach Partitionen vergrößern oder verkleinern.
+- `Encrypt the new Ubuntu installation for security`
+	- Verschlüsselt die komplette Ubuntu-Installation mit einem Passwort, welches beim Boot angegeben werden muss.
+- `Erase disk and use zfs`
+	- ZFS --> Modernes FileSystem, funktionen wie Datenintegrität, Snapshots, Deduplizierung
+	- Gut für fortgeschritte Anwender
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  
+<img src="./assets/scvmm/create-scvmm-23.png" alt="create-scvmm-23" style="object-fit: scale-down">
+
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+Wenn wir auf `Install Now` klicken, werden wir nochmal geben  die zu erstellenden Partitionen zu überprüfen.
+  </div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-24.png" alt="create-scvmm-24" style="object-fit: scale-down">
+
+  
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 80%; height: 20%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+Nun müssen wir die Zeitzone angeben. Für uns ist das natürlich Berlin.
+  </div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-25.png" alt="create-scvmm-25" style="object-fit: scale-down">
+
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+Zu guter Letzt, müssen wir nun unseren initialen Benutzer festlegen, welcher gleichzeitig Adminstrator-Rechte bekommt.
+  </div>
+</div>
+
+notes:
+Wähle hier auf jeden Fall, wenn du ins Internet möchtest, ein starkes Passwort und loggen Sie sich am besten **manuell** und **nicht automatisch** ein. Das regt dich dazu an, dir das Passwort schnell zu merken. Später nehmen wir regelmäßig Änderungen am System vor und  diese Befehle müssen eben auch mit dem Passwort bestätigen werden.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<img src="./assets/scvmm/create-scvmm-26.png" alt="create-scvmm-26" style="object-fit: scale-down">
+
+
+notes:
+...loading...
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<img src="./assets/scvmm/create-scvmm-27.png" alt="create-scvmm-27" style="object-fit: scale-down">
+
+
+notes:
+Nach der Installation, müssen wir natürlich das System noch neustarten. Gegebenfalls kommt nach diesem Bildschirm nochmal ein Terminal, wo wir aufgefordert werden das *Installationsmedium* zu entfernen und mit **Enter** zu bestätigen. Einfach den Anweisungen folgen ^-^
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-28.png" alt="create-scvmm-28" style="object-fit: scale-down">
+
+  
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+Nach der Installation können wir uns als unserem `Admin-Benutzer` anmelden.
+  </div>
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  <div class="" style="position: absolute; left: 0%; top: 0%; height: 90%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+  
+<img src="./assets/scvmm/create-scvmm-29.png" alt="create-scvmm-29" style="object-fit: scale-down">
+
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 70%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+Nach der Anmeldung, beim ersten Start, werden wir mit diesem Bildschirm begrüsst. Klicken Sie sich hier einfach oben rechts über `skip` durch die Menüs.
+  </div>
+</div>
+</div></script></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Basiseinstellungen
+
+> Slides haben Sub-Sections (d.h. **Erst nach unten**, anschließend nach rechts weiter)
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Die Proxy Einstellungen müssen **nur** Nutzer der **Lutz & Grub VMs** einrichten!
+</div></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Performance-Hack für SCVMM
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Um etwas weniger Latenz bei der Nutzung von SCVMM zu haben, fügen wir `blacklist hyperv_fb` an das Ende der `/etc/modprobe.d/blacklist.conf` Datei hinzu.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+`sudo nano /etc/modprobe.d/blacklist.conf`
+
+**`/etc/modprobe.d/blacklist.conf`**
+```conf
+...
+blacklist hyperv_fb
+```
+
+notes:
+
+`_fb` steht hier für Frame-Buffer. Was wir hier machen, ist ein Kernel-Modul, welches für den HyperV-Framebuffer verantwortlich ist, zu deaktivieren. Kernel-Module sind, unter anderem, Geräte-Treiber.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Anschließend ein Reboot, dann sollte alles etwas schneller wirken.
+</div></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Proxy für APT
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Da wir bei den VM's nur über einen Proxy-Server ins Internet verbinden können, müssen wir diesen zuerst einstellen, bevor wir mit dem System arbeiten können.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Dafür öffnen wir mit dem Texteditor **nano** die Proxy Konfigurations-Datei, welche in `/etc/apt/apt.conf.d/proxy.conf` liegt. Dabei müssen wir vor dem eigentlichen Command, den wir ausführen wollen **sudo** schreiben, um den Befehl mit Administratorberechtigungen auszuführen, da dieser Ordner nicht für unseren Standard-Benutzer verfügbar ist.
+
+```bash
+sudo nano /etc/apt/apt.conf.d/proxy.conf
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+**`/etc/apt/apt.conf.d/proxy.conf`**
+```conf
+Acquire {
+	HTTP::proxy "http://"<addresse>:<port>";
+	HTTPS::proxy "http://"<addresse>:<port>";
+}
+```
+
+Für unsere Zwecke ist die Adresse des `http`- und `https`-Proxies die gleiche, allerdings müssen wir in jedem Fall für beide Zeilen eine Adresse angeben. Im Zweifelsfall entspricht die Adresse des `https` Proxies, die des `http` Proxies.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Wenn wir die Datei nun speichern und wieder schließen, und dann nochmals **apt** aufrufen, sollten wir eine Verbindung mit dem Internet bekommen.
+
+```bash
+sudo apt update
+```
+
+>Sollte dieser Befehl noch immer Fehlschlagen, springen Sie zur Sektion [Troubleshooting](#Troubleshooting).
+</div></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Proxy für HTTP und sonstige Protokolle
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Mit Außnahme von `apt` nutzen die meißten Linux Programme die Proxy Server, welcher in der Umgebungsvariablen `HTTP_PROXY` und `HTTPS_PROXY` definiert sind. Die Umgebungsvariablen können wie folgt gesetzt werden:
+
+```bash
+export HTTP_PROXY=<adresse>:<port>
+export HTTPS_PROXY=<adresse>:<port>
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Wenn du diesen Befehl in der Konsole verwendest, dann wird die Umgebungsvariable einmalig gesetzt. Wenn also nach diesem Befehl die Verbindung funktioniert, dann solltest du  die Umgebungsvariablen permanent setzen, zum Beispiel über die `.bashrc` Datei.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Ob unsere Einstellung funktioniert, können wir ganz einfach mit `curl` **oder** `wget` testen:
+
+```bash
+curl -I www.google.com # oder
+wget --spider www.google.com
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+> Hinweis:
+> `ping` nutzt das ICMP-Protokoll und ist zum testen einer HTTP-Verbindung nicht geeignet!
+</div></script></section></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Troubleshooting
+</div></script></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Keine Internetverbindung trotz eingestelltem Proxy
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+1. Überprüfe die Proxy-Einstellungen: Stelle sicher, dass die richtigen Proxy-Einstellungen in deiner `/etc/apt/apt.conf.d/proxy.conf` eingestellt sind. Überprüfe den Syntax der Einstellungen und die Berechtigungen der Datei (`-rw-r--r--`, bzw. `644`).
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+2. Überprüf die Netzwerkverbindung: Vergewissere dich, dass dein Computer eine aktive Netzwerkverbindung hat und dass er eine IP-Adresse vom DHCP-Server erhält. Du kannst mit folgendem Command die Lease erneuern lassen:
+
+```bash
+sudo dhclient -r && sudo dhclient
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+3. Überprüfe die Firewall-Einstellungen: Vergewissere dich sich, dass die Firewall-Einstellungen die Verbindung zum Internet nicht blockieren.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+4. Überprüfe den APT-Cache: Versuche, den APT-Cache zu bereinigen, indem du `sudo apt-get clean` ausführst.
+</div></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Enhanced Session - HyperV
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Folgende Anleitung ist **nur** relevant für **HyperV** Benutzer, welche die VM manuell eingerichtet haben (also *kein Quick-Create* genutzt haben).
+
+Um die "Erweiterte Sitzung" mit besseren Display-Treibern und Textscaling zu nutzen, müssen wir unter Linux noch zusätzliche Konfiguration vornehmen. Dieses Beispiel ist für Ubuntu als VM unter HyperV.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+#### 1. Installation der Zusatzkomponenten in Linux
+
+Da es für die erweiterte XRDP Sitzung mehrere Komponenten und Konfiguration benötigt, können wir von der Communtity geschriebene Scripts verwenden. Dafür müssen wir jedoch das richtige raus suchen. Eine zuverlässige Quelle für solche Scripts ist folgender Github Account:
+[Hinara/linux-vm-tools](https://github.com/Hinara/linux-vm-tools/)
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+[Hinara/linux-vm-tools](https://github.com/Hinara/linux-vm-tools/)
+
+Dort müssen wir nach der richtigen Distro und Version suchen, z.B. wenn wir als VM Ubuntu 22.04.1 nutzen, dann gehen wir auf `/ubuntu/22.04/install.sh`.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="" drag="100 100">
+
+  <div class="" style="position: absolute; left: 0%; top: 20%; height: 80%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="./assets/scvmm/create-scvmm-30.png" alt="create-scvmm-30" style="object-fit: scale-down">
+
+  
+  </div>
+  <div class="has-dark-background" style="border-radius: 20px; padding: 20px; color: rgb(200,200,200); text-shadow: 1px 1px 3px black; background-color: rgba(50,50,50,0.7); border: 2px solid black; box-sizing: border-box; position: absolute; left: 10%; top: 0%; height: 30%; width: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+Auf `raw` klicken, dann bekommen wir die reine Textversion, welche wir mithilfe von `wget` oder `curl` runterladen können. 
+  </div>
+</div>
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+```bash
+wget https://raw.githubusercontent.com/Hinara/linux-vm-tools/ubuntu20-04/ubuntu/22.04/install.sh
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Das Script muss vor der Ausführung erstmal ausführbar gemacht werden...
+
+```bash
+sudo chmod u+x ./install.sh
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+... und kann anschließend mit diesem Befehl **mit sudo** gestartet werden:
+
+```bash
+sudo ./install.sh
+```
+
+Nach der Installation muss die VM (Ubuntu in diesem Fall) neu gestartet werden: `sudo reboot`
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+#### Aktivierung der erweiterten Sitzung in Windows
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Damit wir nun die erweiterte Sitzung in der Linux VM nutzen können, müssen wir diese erst aktivieren.
+
+Alle folgenden Befehle in diesem Abschnitt müssen aus einer **Powershell** mit **Administrator-Berechtigung** ausgeführt werden!
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+```powershell
+Get-VMHost | select Name, EnableEnhancedSessionMode
+```
+
+**`output:`**
+```shell
+PS C:\WINDOWS\system32> Get-VMHost | select Name, EnableEnhancedSessionMode
+
+Name          EnableEnhancedSessionMode
+----          -------------------------
+Computer-Name                      False
+
+PS C:\WINDOWS\system32>
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Den `EnhancedSessionMode` können wir mit folgendem Befehl für den VMHost aktivieren, falls er noch nicht auf `true` gesetzt ist.
+
+```powershell
+Set-VMHost -EnableEnhancedSessionMode $true
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Anschließend aktivieren wir den `EnhancedSessionMode` für die spezifische VM mit folgendem Befehl, wobei `"Name-der-VM"` mit dem tatsächlichen Namen der VM ersetzt werden muss.
+
+```powershell
+Set-VM -VMName "Name-der-VM" -EnhancedSessionTransportType HvSocket
+```
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Danach sollte sich der `EnhancedSessionMode` starten lassen. Falls dies nicht der Fall ist, kann gegebenenfalls ein Neustart des Hosts notwendig sein.
+</div></script></section></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Ende?
+
+Weiter geht’s hier:
+
+[LUG-Learn | Die erste Stunde mit Linux](https://lug-learn.netlify.app/linux/linux-die-erste-stunde/)
+
+Eine Geschichtsstunde zur Entstehung von Linux gibt es hier:
+
+[LUG-Learn | Die Geschichte von Linux](https://lug-learn.netlify.app/linux/linux-geschichte/)
+</div></script></section></div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script src="plugin/zoom/zoom.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/math/math.js"></script>
+	<script src="plugin/mermaid/mermaid.js"></script>
+	<script src="plugin/chart/chart.min.js"></script>
+	<script src="plugin/chart/plugin.js"></script>
+	<script src="plugin/menu/menu.js"></script>
+	<script src="plugin/customcontrols/plugin.js"></script>
+	<script src="plugin/reveal-pointer/pointer.js"></script>
+	<script src="plugin/elapsed-time-bar/elapsed-time-bar.js"></script>
+
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+	  function isLight(color) {
+		let hex = color.replace('#', '');
+
+		// convert #fff => #ffffff
+		if(hex.length == 3){
+			hex = `${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+		}
+
+		const c_r = parseInt(hex.substr(0, 2), 16);
+		const c_g = parseInt(hex.substr(2, 2), 16);
+		const c_b = parseInt(hex.substr(4, 2), 16);
+		const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
+		return brightness > 155;
+	}
+
+	var bgColor = getComputedStyle(document.documentElement).getPropertyValue('--r-background-color').trim();
+	var isLight = isLight(bgColor);
+
+	if(isLight){
+		document.body.classList.add('has-light-background');
+	} else {
+		document.body.classList.add('has-dark-background');
+	}
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath.MathJax3,
+		  RevealMermaid,
+		  RevealChart,
+		  RevealCustomControls,
+		  RevealMenu,
+	      RevealPointer,
+		  ElapsedTimeBar
+        ],
+
+
+    	allottedTime: 120 * 1000,
+
+		mathjax3: {
+			mathjax: 'plugin/math/mathjax/tex-mml-chtml.js',
+		},
+		markdown: {
+		  gfm: true,
+		  mangle: true,
+		  pedantic: false,
+		  smartLists: false,
+		  smartypants: false,
+		},
+
+		mermaid: {
+			theme: isLight ? 'default' : 'dark',
+		},
+
+		customcontrols: {
+			controls: [
+				{id: 'toggle-overview',
+				title: 'Toggle overview (O)',
+				icon: '<i class="fa fa-th"></i>',
+				action: 'Reveal.toggleOverview();'
+				},
+			]
+		},
+		menu: {
+			loadIcons: false
+		}
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"width":960,"height":700,"margin":0.04,"controls":true,"progress":true,"slideNumber":true,"transition":"slide","transitionSpeed":"fast"}, queryOptions);
+    </script>
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+
+  <!-- created with Advanced Slides -->
+</html>
